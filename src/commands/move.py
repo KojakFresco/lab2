@@ -11,17 +11,18 @@ def cp(logger: Logger, ops: list[str], args: list[str]) -> None:
     if os.path.abspath(args[0]) == os.path.abspath(args[1]):
         logger.error(f"'{args[0]}' и '{args[1]}' - это один и тот же файл")
         return
+    if len(ops) == 1 and ops[0] != "r":
+        logger.error(f"Неверная опция '{ops[0]}'")
+        return
+    if not os.path.exists(args[0]):
+        logger.error(f"'{args[0]}' не существует")
+        return
 
-    if len(ops) == 1:
-        if ops[0] == "r":
-            recursive_copy(logger, args[0], args[1])
-        else:
-            logger.error(f"Неверная опция '{ops[0]}'")
+    if len(ops) == 1 or os.path.isfile(args[0]):
+        recursive_copy(logger, args[0], args[1])
     else:
-        if os.path.isfile(args[0]):
-            recursive_copy(logger, args[0], args[1])
-        else:
-            logger.error("Не указан ключ -r. Невозможно скопировать")
+        logger.error("Не указан ключ -r. Невозможно скопировать")
+
     return
 
 
@@ -51,6 +52,7 @@ def mv(logger: Logger, ops: list[str], args: list[str]) -> None:
     if not os.path.exists(file):
         logger.error(f"'{file}' не существует")
         return
+
     try:
         shutil.move(file, dest)
     except shutil.Error:
@@ -66,12 +68,18 @@ def rm(logger: Logger, ops: list[str], args: list[str]) -> None:
     if len(ops) > 1 or len(args) != 1:
         logger.error("Неверный синтаксис команды rm")
         return
-    # TODO: add y/n and check ..
+
     path = args[0]
     try:
         if len(ops) == 1:
             if ops[0] == "r":
-                shutil.rmtree(path)
+                while True:
+                    ans = input(f"Удалить директорию '{path}'? [y/n] ")
+                    if ans == "y":
+                        shutil.rmtree(path)
+                        break
+                    elif ans == "n":
+                        break
                 logger.debug("SUCCESS")
             else:
                 logger.error(f"Неверная опция '{ops[0]}'")

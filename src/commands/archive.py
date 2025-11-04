@@ -14,10 +14,10 @@ def zip(logger: Logger, ops: list[str], args: list[str]) -> None:
     if not os.path.exists(file):
         logger.error(f"'{file}' не существует")
         return
+
     try:
         if dest.rfind(".zip") != -1:
-            dest = dest[:dest.rfind(".zip")] + ".zip"
-        else: dest += ".zip"
+            dest = dest[:dest.rfind(".zip")]
 
         shutil.make_archive(dest, "zip", root_dir=os.getcwd(), base_dir=file)
     except PermissionError:

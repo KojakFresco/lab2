@@ -11,7 +11,7 @@ def touch(logger: Logger, ops: list[str], args: list[str]) -> None:
         pathlib.Path(args[0]).touch()
         logger.debug("SUCCESS")
     except FileExistsError:
-        logger.error(f"Файл '{args[0]}' уже существует")
+        logger.debug("SUCCESS")
     except OSError:
         logger.error(f"Невозможно создать файл с названием '{args[0]}'")
 
@@ -27,7 +27,10 @@ def mkdir(logger: Logger, ops: list[str], args: list[str]) -> None:
         pathlib.Path(args[0]).mkdir()
         logger.debug("SUCCESS")
     except FileExistsError:
-        logger.error(f"Директория '{args[0]}' уже существует")
+        if os.path.isdir(args[0]):
+            logger.error(f"Директория '{args[0]}' уже существует")
+        else:
+            logger.error(f"Не удалось создать директорию: Существует файл с названием '{args[0]}'")
     except OSError:
         logger.error(f"Невозможно создать директорию с названием '{args[0]}'")
 

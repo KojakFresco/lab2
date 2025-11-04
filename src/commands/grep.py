@@ -21,30 +21,38 @@ def grep(logger: Logger, ops: list[str], args: list[str]) -> None:
 
     if "r" in ops or os.path.isfile(path):
 
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                f_path = f"{root}{os.sep}{file}"
-                with open(f_path) as f:
-                    try:
-                        for n, line in enumerate(f.read().splitlines()):
-                            res = list(re.finditer(pattern, line, re.IGNORECASE if "i" in ops else 0))
-                            if not res:
-                                continue
+        if os.path.isfile(path):
+            find(pattern, path, ops)
+        else:
+            for root, dirs, files in os.walk(path):
+                for file in files:
+                    find(pattern, f"{root}{os.sep}{file}", ops)
 
-                            pos = 0
-                            print(Fore.LIGHTMAGENTA_EX + f"in {f_path} on line {n + 1}", Fore.CYAN + ":", sep="",
-                                  end="")
-                            for m in res:
-                                print(line[pos:m.start()], Fore.RED + line[m.start():m.end()], sep="", end="")
-                                pos = m.end()
-                            print(line[pos:])
-
-                    except UnicodeDecodeError:
-                        logger.error("Невозможно расшифровать кодировку")
-                        return
         logger.debug("SUCCESS")
 
     else:
-        logger.error("Не указан ключ -r. Невозможно скопировать")
+        logger.error("Не указан ключ -r. Невозможно осуществить поиск")
 
+    return
+
+
+def find(pattern: str, f_path: str, ops: list[str]) -> None:
+    with open(f_path) as f:
+        try:
+
+            for n, line in enumerate(f.read().splitlines()):
+                res = list(re.finditer(pattern, line, re.IGNORECASE if "i" in ops else 0))
+                if not res:
+                    continue
+
+                pos = 0
+                print(Fore.LIGHTMAGENTA_EX + f"{f_path} на строке {n + 1}", Fore.CYAN + ":", sep="",
+                      end="")
+                for m in res:
+                    print(line[pos:m.start()], Fore.RED + line[m.start():m.end()], sep="", end="")
+                    pos = m.end()
+                print(line[pos:])
+
+        except UnicodeDecodeError:
+            return
     return

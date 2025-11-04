@@ -1,5 +1,4 @@
 import os
-import pathlib
 
 from config import LOGGING_CONFIG
 import logging.config
@@ -53,10 +52,11 @@ def main() -> None:
             continue
         if cmd: logger.debug(cmd)
 
-        if cmd in ["exit", "quit"]:
+        tokens = parse(cmd, root)
+
+        if tokens["fun"] in ["exit", "quit"]:
             break
 
-        tokens = parse(cmd, root)
         if tokens:
             try:
                 functions[tokens["fun"]](logger, tokens["options"], tokens["args"])
