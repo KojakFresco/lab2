@@ -1,24 +1,24 @@
 import os
-from logging import Logger
+import logging
 
 
-def cat(logger: Logger, ops: list[str], args: list[str]) -> None:
-    if ops and len(args) != 1:
-        logger.error("Неверный синтаксис команды cat")
+def cat(ops: list[str], args: list[str]) -> None:
+    if ops or len(args) != 1:
+        logging.getLogger(__name__).error("Неверный синтаксис команды cat")
         return
 
     path = args[0]
     if not os.path.exists(path):
-        logger.error(f"{path} не существует")
+        logging.getLogger(__name__).error(f"'{path}' не существует")
         return
     if os.path.isdir(path):
-        logger.error(f"{path} это директория")
+        logging.getLogger(__name__).error(f"'{path}' это директория")
         return
 
     try:
         print(open(path, encoding="utf-8").read())
-        logger.debug("SUCCESS")
+        logging.getLogger(__name__).debug("SUCCESS")
     except UnicodeDecodeError:
-        logger.error("Не получилось расшифровать файл в кодировке utf-8")
+        logging.getLogger(__name__).error("Не получилось расшифровать файл в кодировке utf-8")
 
     return

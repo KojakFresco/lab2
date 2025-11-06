@@ -59,7 +59,7 @@ def main() -> None:
 
         if tokens:
             try:
-                functions[tokens["fun"]](logger, tokens["options"], tokens["args"])
+                functions[tokens["fun"]](tokens["options"], tokens["args"])
             except KeyError:
                 logger.error(f"Команда '{tokens["fun"]}' не найдена")
 

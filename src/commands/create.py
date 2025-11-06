@@ -1,37 +1,37 @@
 import pathlib
 import os
-from logging import Logger
+import logging
 
 
-def touch(logger: Logger, ops: list[str], args: list[str]) -> None:
+def touch(ops: list[str], args: list[str]) -> None:
     if ops or len(args) != 1:
-        logger.error("Неверный синтаксис команды touch")
+        logging.getLogger(__name__).error("Неверный синтаксис команды touch")
         return
     try:
         pathlib.Path(args[0]).touch()
-        logger.debug("SUCCESS")
+        logging.getLogger(__name__).debug("SUCCESS")
     except FileExistsError:
-        logger.debug("SUCCESS")
+        logging.getLogger(__name__).debug("SUCCESS")
     except OSError:
-        logger.error(f"Невозможно создать файл с названием '{args[0]}'")
+        logging.getLogger(__name__).error(f"Невозможно создать файл с названием '{args[0]}'")
 
     return
 
 
-def mkdir(logger: Logger, ops: list[str], args: list[str]) -> None:
-    if ops and len(args) != 1:
-        logger.error("Неверный синтаксис команды mkdir")
+def mkdir(ops: list[str], args: list[str]) -> None:
+    if ops or len(args) != 1:
+        logging.getLogger(__name__).error("Неверный синтаксис команды mkdir")
         return
 
     try:
         pathlib.Path(args[0]).mkdir()
-        logger.debug("SUCCESS")
+        logging.getLogger(__name__).debug("SUCCESS")
     except FileExistsError:
         if os.path.isdir(args[0]):
-            logger.error(f"Директория '{args[0]}' уже существует")
+            logging.getLogger(__name__).error(f"Директория '{args[0]}' уже существует")
         else:
-            logger.error(f"Не удалось создать директорию: Существует файл с названием '{args[0]}'")
+            logging.getLogger(__name__).error(f"Не удалось создать директорию: Существует файл с названием '{args[0]}'")
     except OSError:
-        logger.error(f"Невозможно создать директорию с названием '{args[0]}'")
+        logging.getLogger(__name__).error(f"Невозможно создать директорию с названием '{args[0]}'")
 
     return

@@ -1,22 +1,22 @@
 import os
 import re
-from logging import Logger
+import logging
 
-from colorama import Fore
+from colorama import Fore, Style
 
 
-def grep(logger: Logger, ops: list[str], args: list[str]) -> None:
+def grep(ops: list[str], args: list[str]) -> None:
     if len(args) != 2 or len(ops) > 2:
-        logger.error(f"Неверный синтаксис команды grep")
+        logging.getLogger(__name__).error(f"Неверный синтаксис команды grep")
+        return
+
+    if any(op not in "ri" for op in ops):
+        logging.getLogger(__name__).error(f"Неверная опция '{ops[0] if ops[0] not in "ri" else ops[1]}'")
         return
 
     pattern, path = args
-
     if not os.path.exists(path):
-        logger.error(f"'{path}' не существует")
-        return
-    if any(op not in "ri" for op in ops):
-        logger.error(f"Неверная опция '{ops[0]}'")
+        logging.getLogger(__name__).error(f"'{path}' не существует")
         return
 
     if "r" in ops or os.path.isfile(path):
@@ -28,10 +28,10 @@ def grep(logger: Logger, ops: list[str], args: list[str]) -> None:
                 for file in files:
                     find(pattern, f"{root}{os.sep}{file}", ops)
 
-        logger.debug("SUCCESS")
+        logging.getLogger(__name__).debug("SUCCESS")
 
     else:
-        logger.error("Не указан ключ -r. Невозможно осуществить поиск")
+        logging.getLogger(__name__).error("Не указан ключ -r. Невозможно осуществить поиск")
 
     return
 
@@ -46,10 +46,10 @@ def find(pattern: str, f_path: str, ops: list[str]) -> None:
                     continue
 
                 pos = 0
-                print(Fore.LIGHTMAGENTA_EX + f"{f_path} на строке {n + 1}", Fore.CYAN + ":", sep="",
+                print(Fore.LIGHTMAGENTA_EX + f"{f_path} на строке {n + 1}", Fore.CYAN + ":", Style.RESET_ALL, sep="",
                       end="")
                 for m in res:
-                    print(line[pos:m.start()], Fore.RED + line[m.start():m.end()], sep="", end="")
+                    print(line[pos:m.start()], Fore.RED + line[m.start():m.end()], Style.RESET_ALL, sep="", end="")
                     pos = m.end()
                 print(line[pos:])
 

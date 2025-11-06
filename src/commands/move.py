@@ -1,78 +1,84 @@
 import os
 import shutil
 import pathlib
-from logging import Logger
+import logging
 
 
-def cp(logger: Logger, ops: list[str], args: list[str]) -> None:
+def cp(ops: list[str], args: list[str]) -> None:
     if len(args) != 2 or len(ops) > 1:
-        logger.error(f"Неверный синтаксис команды cp")
+        logging.getLogger(__name__).error(f"Неверный синтаксис команды cp")
         return
     if os.path.abspath(args[0]) == os.path.abspath(args[1]):
-        logger.error(f"'{args[0]}' и '{args[1]}' - это один и тот же файл")
+        logging.getLogger(__name__).error(f"'{args[0]}' и '{args[1]}' - это один и тот же путь")
         return
     if len(ops) == 1 and ops[0] != "r":
-        logger.error(f"Неверная опция '{ops[0]}'")
+        logging.getLogger(__name__).error(f"Неверная опция '{ops[0]}'")
         return
     if not os.path.exists(args[0]):
-        logger.error(f"'{args[0]}' не существует")
+        logging.getLogger(__name__).error(f"'{args[0]}' не существует")
         return
 
     if len(ops) == 1 or os.path.isfile(args[0]):
-        recursive_copy(logger, args[0], args[1])
+        if recursive_copy(args[0], args[1]):
+            logging.getLogger(__name__).debug("SUCCESS")
     else:
-        logger.error("Не указан ключ -r. Невозможно скопировать")
+        logging.getLogger(__name__).error("Не указан ключ -r. Невозможно скопировать")
 
     return
 
 
-def recursive_copy(logger: Logger, path: str, dest: str) -> int:
-    # logger.debug(f"path: {os.path.abspath(path)}, dest: {os.path.abspath(dest)}")
+def recursive_copy(path: str, dest: str) -> int:
+    # logging.getLogger(__name__).debug(f"path: {os.path.abspath(path)}, dest: {os.path.abspath(dest)}")
     if os.path.isdir(path):
         if not pathlib.Path(dest).exists(): pathlib.Path(dest).mkdir()
         for el in os.listdir(path):
-            if recursive_copy(logger, f"{path}/{el}", f"{dest}/{el}") == -1:
-                return -1
+            if not recursive_copy(f"{path}/{el}", f"{dest}/{el}"):
+                return 0
     else:
         try:
             shutil.copy(path, dest)
         except PermissionError:
-            logger.error("Отказано в доступе")
-            return -1
-    logger.debug("SUCCESS")
-    return 0
+            logging.getLogger(__name__).error("Отказано в доступе")
+            return 0
+    return 1
 
 
-def mv(logger: Logger, ops: list[str], args: list[str]) -> None:
+def mv(ops: list[str], args: list[str]) -> None:
     if len(args) != 2 or ops:
-        logger.error(f"Неверный синтаксис команды mv")
+        logging.getLogger(__name__).error(f"Неверный синтаксис команды mv")
         return
 
     file, dest = args
     if not os.path.exists(file):
-        logger.error(f"'{file}' не существует")
+        logging.getLogger(__name__).error(f"'{file}' не существует")
         return
 
     try:
         shutil.move(file, dest)
     except shutil.Error:
-        logger.error(f"Нельзя переместить директорию '{file}' в свою поддиректорию '{dest}'")
+        logging.getLogger(__name__).error(f"Нельзя переместить директорию '{file}' в свою поддиректорию '{dest}'")
     except PermissionError:
-        logger.error("Отказано в доступе")
+        logging.getLogger(__name__).error("Отказано в доступе")
         return
-    logger.debug("SUCCESS")
+    logging.getLogger(__name__).debug("SUCCESS")
     return
 
 
-def rm(logger: Logger, ops: list[str], args: list[str]) -> None:
+def rm(ops: list[str], args: list[str]) -> None:
     if len(ops) > 1 or len(args) != 1:
-        logger.error("Неверный синтаксис команды rm")
+        logging.getLogger(__name__).error("Неверный синтаксис команды rm")
         return
 
     path = args[0]
+    if not os.path.exists(path):
+        logging.getLogger(__name__).error(f"'{path}' не существует")
+        return
+
     try:
-        if len(ops) == 1:
+
+        if len(ops) == 1 and os.path.isdir(path):
             if ops[0] == "r":
+
                 while True:
                     ans = input(f"Удалить директорию '{path}'? [y/n] ")
                     if ans == "y":
@@ -80,15 +86,17 @@ def rm(logger: Logger, ops: list[str], args: list[str]) -> None:
                         break
                     elif ans == "n":
                         break
-                logger.debug("SUCCESS")
+                logging.getLogger(__name__).debug("SUCCESS")
+
             else:
-                logger.error(f"Неверная опция '{ops[0]}'")
+                logging.getLogger(__name__).error(f"Неверная опция '{ops[0]}'")
         else:
             if os.path.isfile(path):
                 os.remove(path)
-                logger.debug("SUCCESS")
+                logging.getLogger(__name__).debug("SUCCESS")
             else:
-                logger.error(f"Невозможно удалить '{path}': это директория")
+                logging.getLogger(__name__).error(f"Невозможно удалить '{path}': это директория")
+
     except PermissionError:
-        logger.error("Отказано в доступе")
+        logging.getLogger(__name__).error("Отказано в доступе")
     return

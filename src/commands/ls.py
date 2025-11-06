@@ -1,16 +1,11 @@
 import os
 import colorama
 import time
+import logging
 
-def ls(logger, ops: list[str], args: list[str]) -> None:
+def ls(ops: list[str], args: list[str]) -> None:
     if len(args) > 1 or len(ops) > 1:
-        logger.error(f"Неверный синтаксис команды ls")
-        return
-
-    path = args[0] if len(args) > 0 else os.getcwd()
-
-    if not os.path.exists(path) or os.path.isfile(path):
-        logger.error(f"Директории '{path}' не существует")
+        logging.getLogger(__name__).error(f"Неверный синтаксис команды ls")
         return
 
     l = False
@@ -18,7 +13,13 @@ def ls(logger, ops: list[str], args: list[str]) -> None:
         if ops[0] == "l":
             l = True
         else:
-            logger.error(f"Неверная опция '{ops[0]}'")
+            logging.getLogger(__name__).error(f"Неверная опция '{ops[0]}'")
+            return
+
+    path = args[0] if len(args) > 0 else os.getcwd()
+    if not os.path.exists(path) or os.path.isfile(path):
+        logging.getLogger(__name__).error(f"Директории '{path}' не существует")
+        return
 
     for f in os.listdir(path):
         f_path = path + "/" + f
@@ -32,7 +33,7 @@ def ls(logger, ops: list[str], args: list[str]) -> None:
         else:
             print(name, end="  ")
     if not l and len(os.listdir(path)) > 0: print()
-    logger.debug("SUCCESS")
+    logging.getLogger(__name__).debug("SUCCESS")
 
     return
 
